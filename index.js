@@ -1,64 +1,95 @@
 const express = require("express");
-const morgan = require("morgan");
+const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = 8080;
+
+// Middleware: lexon JSON nga body (për POST/PUT)
+app.use(express.json());
+
+// Serve static files from /public (documentation.html, index.html)
+app.use(express.static(path.join(__dirname, "public")));
 
 /**
- * 1) Morgan logging middleware
- * PSE: CareerFoundry kërkon logging me Morgan (në terminal), jo me fs/log.txt
- */
-app.use(morgan("common"));
-
-/**
- * 2) GET "/" - default textual response
- * PSE: Kërkohet route default në root endpoint
+ * ROOT (opsionale)
+ * Shkruaj këtë vetëm për të parë shpejt që serveri po punon.
  */
 app.get("/", (req, res) => {
-  res.send("Welcome to my Movie API!");
+  res.send("Welcome to myFlix API");
 });
 
 /**
- * 3) GET "/movies" - returns JSON for top 10 movies
- * PSE: Kërkohet route /movies që kthen JSON
+ * =========================
+ * MOVIES ENDPOINTS
+ * =========================
  */
+
+// 1) Return a list of ALL movies
 app.get("/movies", (req, res) => {
-  res.json([
-    { title: "The Godfather", year: 1972, director: "Francis Ford Coppola" },
-    { title: "The Dark Knight", year: 2008, director: "Christopher Nolan" },
-    { title: "Pulp Fiction", year: 1994, director: "Quentin Tarantino" },
-    { title: "Inception", year: 2010, director: "Christopher Nolan" },
-    { title: "Fight Club", year: 1999, director: "David Fincher" },
-    { title: "Forrest Gump", year: 1994, director: "Robert Zemeckis" },
-    { title: "The Matrix", year: 1999, director: "The Wachowskis" },
-    { title: "Interstellar", year: 2014, director: "Christopher Nolan" },
-    { title: "Gladiator", year: 2000, director: "Ridley Scott" },
-    { title: "Parasite", year: 2019, director: "Bong Joon-ho" }
-  ]);
+  res.send("Successful GET request returning data on all movies");
 });
 
+// 2) Return data about a single movie by title
+app.get("/movies/:title", (req, res) => {
+  res.send(
+    `Successful GET request returning data for movie with title: ${req.params.title}`
+  );
+});
 
+// 3) Return data about a genre by name/title
+app.get("/genres/:name", (req, res) => {
+  res.send(
+    `Successful GET request returning data for genre: ${req.params.name}`
+  );
+});
 
-/**
- * 4) Serve static files from /public
- * PSE: CareerFoundry kërkon të shërbesh documentation.html me express.static
- * Kjo lejon: http://localhost:8080/documentation.html
- */
-app.use(express.static("public"));
-
-/**
- * 5) Error-handling middleware (application-level errors)
- * PSE: CareerFoundry kërkon error handler që log-on errors në terminal
- * Shënim: Ky kap vetëm gabime që kalojnë me next(err)
- */
-app.use((err, req, res, next) => {
-  console.error("Application Error:", err.stack);
-  res.status(500).send("Something went wrong!");
+// 4) Return data about a director by name
+app.get("/directors/:name", (req, res) => {
+  res.send(
+    `Successful GET request returning data for director: ${req.params.name}`
+  );
 });
 
 /**
- * Start server
+ * =========================
+ * USERS ENDPOINTS
+ * =========================
  */
+
+// 5) Allow new users to register
+app.post("/users", (req, res) => {
+  // Ne kete faze s'kemi database. Thjesht konfirmojme veprimin.
+  // req.body do te perdoret me vone per te krijuar userin real.
+  res.status(201).send("Successful POST request: user would be registered");
+});
+
+// 6) Allow users to update their user info (username)
+app.put("/users/:username", (req, res) => {
+  res.send(
+    `Successful PUT request: user ${req.params.username} would be updated`
+  );
+});
+
+// 7) Allow users to add a movie to their list of favorites
+app.post("/users/:username/movies/:movieId", (req, res) => {
+  res.send(
+    `Movie ${req.params.movieId} was added to ${req.params.username}'s favorites`
+  );
+});
+
+// 8) Allow users to remove a movie from their list of favorites
+app.delete("/users/:username/movies/:movieId", (req, res) => {
+  res.send(
+    `Movie ${req.params.movieId} was removed from ${req.params.username}'s favorites`
+  );
+});
+
+// 9) Allow existing users to deregister
+app.delete("/users/:username", (req, res) => {
+  res.send(`User ${req.params.username} was deregistered`);
+});
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`myFlix API is listening on port ${PORT}`);
 });
