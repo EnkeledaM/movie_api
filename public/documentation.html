@@ -1,3 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>myFlix API Documentation</title>
+</head>
+
+<body>
+
+<h1>myFlix REST API</h1>
+
+<p>
+  The myFlix API provides access to information about movies, genres, and directors.
+  It also allows users to register, update their profile, manage a list of favorite movies,
+  and deregister their account.
+</p>
+
+<hr>
+
 <h2>myFlix API Endpoints</h2>
 
 <table border="1" cellpadding="8">
@@ -14,37 +33,37 @@
       <td>Get all movies</td>
       <td>/movies</td>
       <td>GET</td>
-      <td>Text/JSON: list of all movies</td>
+      <td>Text: list of all movies</td>
     </tr>
     <tr>
       <td>Get movie by title</td>
       <td>/movies/:title</td>
       <td>GET</td>
-      <td>Text/JSON: movie data by title</td>
+      <td>Text: movie data by title</td>
     </tr>
     <tr>
       <td>Get genre by name</td>
       <td>/genres/:name</td>
       <td>GET</td>
-      <td>Text/JSON: genre description</td>
+      <td>Text: genre description</td>
     </tr>
     <tr>
       <td>Get director by name</td>
       <td>/directors/:name</td>
       <td>GET</td>
-      <td>Text/JSON: director data</td>
+      <td>Text: director data</td>
     </tr>
     <tr>
       <td>Register new user</td>
       <td>/users</td>
       <td>POST</td>
-      <td>Text/JSON: user registered</td>
+      <td>Text: user registered</td>
     </tr>
     <tr>
-      <td>Update user (username)</td>
+      <td>Update user</td>
       <td>/users/:username</td>
       <td>PUT</td>
-      <td>Text/JSON: user updated</td>
+      <td>Text: user updated</td>
     </tr>
     <tr>
       <td>Add favorite movie</td>
@@ -66,3 +85,125 @@
     </tr>
   </tbody>
 </table>
+
+<hr>
+
+<h2>Endpoint Details</h2>
+
+<!-- GET /movies -->
+<h3>GET /movies</h3>
+<ul>
+  <li><strong>Description:</strong> Returns a list of all movies.</li>
+  <li><strong>Method:</strong> GET</li>
+  <li><strong>URL Parameters:</strong> None</li>
+  <li><strong>Request Body:</strong> None</li>
+  <li><strong>Response Format:</strong> Text message (future: JSON array)</li>
+  <li><strong>Example Request:</strong> <code>GET http://localhost:8080/movies</code></li>
+  <li><strong>Example Response:</strong> <code>200 OK</code> – Successful GET request returning data on all movies</li>
+</ul>
+
+<!-- GET /movies/:title -->
+<h3>GET /movies/:title</h3>
+<ul>
+  <li><strong>Description:</strong> Returns data about a single movie by title.</li>
+  <li><strong>Method:</strong> GET</li>
+  <li><strong>URL Parameters:</strong> <code>:title</code> – movie title</li>
+  <li><strong>Request Body:</strong> None</li>
+  <li><strong>Response Format:</strong> Text message (future: JSON object)</li>
+  <li><strong>Example Request:</strong> <code>GET http://localhost:8080/movies/Inception</code></li>
+  <li><strong>Example Response:</strong> <code>200 OK</code> – Movie data for Inception</li>
+</ul>
+
+<!-- GET /genres/:name -->
+<h3>GET /genres/:name</h3>
+<ul>
+  <li><strong>Description:</strong> Returns information about a genre.</li>
+  <li><strong>Method:</strong> GET</li>
+  <li><strong>URL Parameters:</strong> <code>:name</code> – genre name</li>
+  <li><strong>Request Body:</strong> None</li>
+  <li><strong>Response Format:</strong> Text message</li>
+  <li><strong>Example Request:</strong> <code>GET http://localhost:8080/genres/Thriller</code></li>
+  <li><strong>Example Response:</strong> <code>200 OK</code> – Genre description</li>
+</ul>
+
+<!-- GET /directors/:name -->
+<h3>GET /directors/:name</h3>
+<ul>
+  <li><strong>Description:</strong> Returns information about a director.</li>
+  <li><strong>Method:</strong> GET</li>
+  <li><strong>URL Parameters:</strong> <code>:name</code> – director name</li>
+  <li><strong>Request Body:</strong> None</li>
+  <li><strong>Response Format:</strong> Text message</li>
+  <li><strong>Example Request:</strong> <code>GET http://localhost:8080/directors/Christopher%20Nolan</code></li>
+  <li><strong>Example Response:</strong> <code>200 OK</code> – Director information</li>
+</ul>
+
+<!-- POST /users -->
+<h3>POST /users</h3>
+<ul>
+  <li><strong>Description:</strong> Registers a new user.</li>
+  <li><strong>Method:</strong> POST</li>
+  <li><strong>Request Body:</strong></li>
+</ul>
+
+<pre>
+{
+  "Username": "enkeleda",
+  "Password": "test123",
+  "Email": "enkeleda@example.com",
+  "Birthday": "1973-08-04"
+}
+</pre>
+
+<ul>
+  <li><strong>Example Response:</strong> <code>201 Created</code> – User registered</li>
+</ul>
+
+<!-- PUT /users/:username -->
+<h3>PUT /users/:username</h3>
+<ul>
+  <li><strong>Description:</strong> Updates user information.</li>
+  <li><strong>Method:</strong> PUT</li>
+  <li><strong>URL Parameters:</strong> <code>:username</code></li>
+  <li><strong>Request Body:</strong></li>
+</ul>
+
+<pre>
+{
+  "Username": "enkeleda_new"
+}
+</pre>
+
+<ul>
+  <li><strong>Example Response:</strong> <code>200 OK</code> – User updated</li>
+</ul>
+
+<!-- POST favorite -->
+<h3>POST /users/:username/movies/:movieId</h3>
+<ul>
+  <li><strong>Description:</strong> Adds a movie to favorites.</li>
+  <li><strong>Method:</strong> POST</li>
+  <li><strong>Example Request:</strong> <code>POST http://localhost:8080/users/enkeleda/movies/123</code></li>
+  <li><strong>Example Response:</strong> <code>200 OK</code> – Movie added to favorites</li>
+</ul>
+
+<!-- DELETE favorite -->
+<h3>DELETE /users/:username/movies/:movieId</h3>
+<ul>
+  <li><strong>Description:</strong> Removes a movie from favorites.</li>
+  <li><strong>Method:</strong> DELETE</li>
+  <li><strong>Example Request:</strong> <code>DELETE http://localhost:8080/users/enkeleda/movies/123</code></li>
+  <li><strong>Example Response:</strong> <code>200 OK</code> – Movie removed from favorites</li>
+</ul>
+
+<!-- DELETE user -->
+<h3>DELETE /users/:username</h3>
+<ul>
+  <li><strong>Description:</strong> Deregisters a user.</li>
+  <li><strong>Method:</strong> DELETE</li>
+  <li><strong>Example Request:</strong> <code>DELETE http://localhost:8080/users/enkeleda</code></li>
+  <li><strong>Example Response:</strong> <code>200 OK</code> – User removed</li>
+</ul>
+
+</body>
+</html>
