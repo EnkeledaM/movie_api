@@ -33,55 +33,55 @@
       <td>Get all movies</td>
       <td>/movies</td>
       <td>GET</td>
-      <td>Text: list of all movies</td>
+      <td>JSON: array of movies</td>
     </tr>
     <tr>
       <td>Get movie by title</td>
       <td>/movies/:title</td>
       <td>GET</td>
-      <td>Text: movie data by title</td>
+      <td>JSON: movie object</td>
     </tr>
     <tr>
       <td>Get genre by name</td>
       <td>/genres/:name</td>
       <td>GET</td>
-      <td>Text: genre description</td>
+      <td>JSON: genre object (description)</td>
     </tr>
     <tr>
       <td>Get director by name</td>
       <td>/directors/:name</td>
       <td>GET</td>
-      <td>Text: director data</td>
+      <td>JSON: director object</td>
     </tr>
     <tr>
       <td>Register new user</td>
       <td>/users</td>
       <td>POST</td>
-      <td>Text: user registered</td>
+      <td>JSON: created user</td>
     </tr>
     <tr>
       <td>Update user</td>
       <td>/users/:username</td>
       <td>PUT</td>
-      <td>Text: user updated</td>
+      <td>JSON: updated user</td>
     </tr>
     <tr>
       <td>Add favorite movie</td>
       <td>/users/:username/movies/:movieId</td>
       <td>POST</td>
-      <td>Text: movie added to favorites</td>
+      <td>JSON: updated user with favorites</td>
     </tr>
     <tr>
       <td>Remove favorite movie</td>
       <td>/users/:username/movies/:movieId</td>
       <td>DELETE</td>
-      <td>Text: movie removed from favorites</td>
+      <td>JSON: updated user with favorites</td>
     </tr>
     <tr>
       <td>Deregister user</td>
       <td>/users/:username</td>
       <td>DELETE</td>
-      <td>Text: user removed</td>
+      <td>JSON: confirmation message</td>
     </tr>
   </tbody>
 </table>
@@ -90,60 +90,56 @@
 
 <h2>Endpoint Details</h2>
 
-<!-- GET /movies -->
 <h3>GET /movies</h3>
 <ul>
   <li><strong>Description:</strong> Returns a list of all movies.</li>
   <li><strong>Method:</strong> GET</li>
   <li><strong>URL Parameters:</strong> None</li>
   <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> Text message (future: JSON array)</li>
+  <li><strong>Response Format:</strong> JSON array</li>
   <li><strong>Example Request:</strong> <code>GET http://localhost:8080/movies</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code> – Successful GET request returning data on all movies</li>
+  <li><strong>Example Response:</strong> <code>200 OK</code></li>
 </ul>
 
-<!-- GET /movies/:title -->
 <h3>GET /movies/:title</h3>
 <ul>
   <li><strong>Description:</strong> Returns data about a single movie by title.</li>
   <li><strong>Method:</strong> GET</li>
   <li><strong>URL Parameters:</strong> <code>:title</code> – movie title</li>
   <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> Text message (future: JSON object)</li>
+  <li><strong>Response Format:</strong> JSON object</li>
   <li><strong>Example Request:</strong> <code>GET http://localhost:8080/movies/Inception</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code> – Movie data for Inception</li>
+  <li><strong>Example Response:</strong> <code>200 OK</code></li>
 </ul>
 
-<!-- GET /genres/:name -->
 <h3>GET /genres/:name</h3>
 <ul>
-  <li><strong>Description:</strong> Returns information about a genre.</li>
+  <li><strong>Description:</strong> Returns information about a genre (description).</li>
   <li><strong>Method:</strong> GET</li>
   <li><strong>URL Parameters:</strong> <code>:name</code> – genre name</li>
   <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> Text message</li>
+  <li><strong>Response Format:</strong> JSON object</li>
   <li><strong>Example Request:</strong> <code>GET http://localhost:8080/genres/Thriller</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code> – Genre description</li>
+  <li><strong>Example Response:</strong> <code>200 OK</code></li>
 </ul>
 
-<!-- GET /directors/:name -->
 <h3>GET /directors/:name</h3>
 <ul>
-  <li><strong>Description:</strong> Returns information about a director.</li>
+  <li><strong>Description:</strong> Returns information about a director (bio, birth year, death year).</li>
   <li><strong>Method:</strong> GET</li>
   <li><strong>URL Parameters:</strong> <code>:name</code> – director name</li>
   <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> Text message</li>
+  <li><strong>Response Format:</strong> JSON object</li>
   <li><strong>Example Request:</strong> <code>GET http://localhost:8080/directors/Christopher%20Nolan</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code> – Director information</li>
+  <li><strong>Example Response:</strong> <code>200 OK</code></li>
 </ul>
 
-<!-- POST /users -->
 <h3>POST /users</h3>
 <ul>
   <li><strong>Description:</strong> Registers a new user.</li>
   <li><strong>Method:</strong> POST</li>
-  <li><strong>Request Body:</strong></li>
+  <li><strong>Request Body:</strong> JSON</li>
+  <li><strong>Response Format:</strong> JSON object</li>
 </ul>
 
 <pre>
@@ -156,53 +152,64 @@
 </pre>
 
 <ul>
-  <li><strong>Example Response:</strong> <code>201 Created</code> – User registered</li>
+  <li><strong>Example Response:</strong> <code>201 Created</code></li>
 </ul>
 
-<!-- PUT /users/:username -->
 <h3>PUT /users/:username</h3>
 <ul>
-  <li><strong>Description:</strong> Updates user information.</li>
+  <li><strong>Description:</strong> Updates user information (one or more fields).</li>
   <li><strong>Method:</strong> PUT</li>
   <li><strong>URL Parameters:</strong> <code>:username</code></li>
-  <li><strong>Request Body:</strong></li>
+  <li><strong>Request Body:</strong> JSON (any updatable fields)</li>
+  <li><strong>Response Format:</strong> JSON object</li>
 </ul>
 
 <pre>
 {
-  "Username": "enkeleda_new"
+  "Username": "enkeleda_new",
+  "Email": "enkeleda_new@example.com"
 }
 </pre>
 
 <ul>
-  <li><strong>Example Response:</strong> <code>200 OK</code> – User updated</li>
+  <li><strong>Example Response:</strong> <code>200 OK</code></li>
 </ul>
 
-<!-- POST favorite -->
 <h3>POST /users/:username/movies/:movieId</h3>
 <ul>
-  <li><strong>Description:</strong> Adds a movie to favorites.</li>
+  <li><strong>Description:</strong> Adds a movie to the user’s favorites list.</li>
   <li><strong>Method:</strong> POST</li>
-  <li><strong>Example Request:</strong> <code>POST http://localhost:8080/users/enkeleda/movies/123</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code> – Movie added to favorites</li>
+  <li><strong>URL Parameters:</strong> <code>:username</code>, <code>:movieId</code></li>
+  <li><strong>Request Body:</strong> None</li>
+  <li><strong>Response Format:</strong> JSON object</li>
+  <li><strong>Example Request:</strong>
+    <code>POST http://localhost:8080/users/enkeleda/movies/65a1f2c3d4e5f67890123456</code>
+  </li>
+  <li><strong>Example Response:</strong> <code>200 OK</code></li>
 </ul>
 
-<!-- DELETE favorite -->
 <h3>DELETE /users/:username/movies/:movieId</h3>
 <ul>
-  <li><strong>Description:</strong> Removes a movie from favorites.</li>
+  <li><strong>Description:</strong> Removes a movie from the user’s favorites list.</li>
   <li><strong>Method:</strong> DELETE</li>
-  <li><strong>Example Request:</strong> <code>DELETE http://localhost:8080/users/enkeleda/movies/123</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code> – Movie removed from favorites</li>
+  <li><strong>URL Parameters:</strong> <code>:username</code>, <code>:movieId</code></li>
+  <li><strong>Request Body:</strong> None</li>
+  <li><strong>Response Format:</strong> JSON object</li>
+  <li><strong>Example Request:</strong>
+    <code>DELETE http://localhost:8080/users/enkeleda/movies/65a1f2c3d4e5f67890123456</code>
+  </li>
+  <li><strong>Example Response:</strong> <code>200 OK</code></li>
 </ul>
 
-<!-- DELETE user -->
 <h3>DELETE /users/:username</h3>
 <ul>
   <li><strong>Description:</strong> Deregisters a user.</li>
   <li><strong>Method:</strong> DELETE</li>
+  <li><strong>URL Parameters:</strong> <code>:username</code></li>
+  <li><strong>Request Body:</strong> None</li>
+  <li><strong>Response Format:</strong> JSON message</li>
   <li><strong>Example Request:</strong> <code>DELETE http://localhost:8080/users/enkeleda</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code> – User removed</li>
+  <li><strong>Example Response:</strong> <code>200 OK</code></li>
 </ul>
 
 </body>
