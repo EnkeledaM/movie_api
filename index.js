@@ -55,15 +55,22 @@ app.get("/movies", async (req, res) => {
 
 // 2) Return data about a single movie by title
 // Example: /movies/Title/Silence%20of%20the%20Lambs
-app.get("/movies/Title/:Title", async (req, res) => {
-  await Movies.findOne({ Title: req.params.Title })
-    .then((movie) => {
-      if (!movie) return res.status(404).send("Movie not found");
-      res.status(200).json(movie);
-    })
-    .catch((err) => res.status(500).send("Error: " + err));
-});
+// 2) Return data about a single movie by title
+// Example: /movies/Inception  OR /movies/Silence%20of%20the%20Lambs
 
+app.get("/movies/:title", async (req, res) => {
+  try {
+    const movie = await Movies.findOne({ Title: req.params.title });
+
+    if (!movie) {
+      return res.status(404).send("Movie not found");
+    }
+
+    res.status(200).json(movie);
+  } catch (err) {
+    res.status(500).send("Error: " + err);
+  }
+});
 // 3) Return data about a genre (description) by name
 // Example: /genres/Thriller
 app.get("/genres/:Name", async (req, res) => {
