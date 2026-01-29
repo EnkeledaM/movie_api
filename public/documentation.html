@@ -1,216 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>myFlix API Documentation</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 24px; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; vertical-align: top; }
+    th { background: #f6f6f6; }
+    code { background: #f2f2f2; padding: 2px 4px; border-radius: 4px; }
+    pre { background: #f6f6f6; padding: 12px; overflow: auto; border-radius: 6px; }
+    hr { margin: 24px 0; }
+    .note { background: #fff8db; padding: 10px; border-left: 4px solid #f2c94c; }
+  </style>
 </head>
 
 <body>
+  <h1>myFlix REST API</h1>
 
-<h1>myFlix REST API</h1>
+  <p>
+    The myFlix API provides access to information about movies, genres, and directors.
+    It also allows users to register, update their profile, manage a list of favorite movies,
+    and deregister their account. This API uses MongoDB Atlas and Mongoose for data modeling
+    and database queries.
+  </p>
 
-<p>
-  The myFlix API provides access to information about movies, genres, and directors.
-  It also allows users to register, update their profile, manage a list of favorite movies,
-  and deregister their account.
-</p>
+  <div class="note">
+    <strong>Note:</strong> Examples below use <code>http://localhost:8080</code>. Replace example IDs/titles with values from your database.
+    <br/>
+    <strong>MovieID format:</strong> MongoDB ObjectId (24-hex string), e.g. <code>65a1f2c3d4e5f67890123456</code>
+  </div>
 
-<hr>
+  <hr>
 
-<h2>myFlix API Endpoints</h2>
+  <h2>myFlix API Endpoints</h2>
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>Request</th>
-      <th>URL</th>
-      <th>HTTP Method</th>
-      <th>Response</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Get all movies</td>
-      <td>/movies</td>
-      <td>GET</td>
-      <td>JSON: array of movies</td>
-    </tr>
-    <tr>
-      <td>Get movie by title</td>
-      <td>/movies/:title</td>
-      <td>GET</td>
-      <td>JSON: movie object</td>
-    </tr>
-    <tr>
-      <td>Get genre by name</td>
-      <td>/genres/:name</td>
-      <td>GET</td>
-      <td>JSON: genre object (description)</td>
-    </tr>
-    <tr>
-      <td>Get director by name</td>
-      <td>/directors/:name</td>
-      <td>GET</td>
-      <td>JSON: director object</td>
-    </tr>
-    <tr>
-      <td>Register new user</td>
-      <td>/users</td>
-      <td>POST</td>
-      <td>JSON: created user</td>
-    </tr>
-    <tr>
-      <td>Update user</td>
-      <td>/users/:username</td>
-      <td>PUT</td>
-      <td>JSON: updated user</td>
-    </tr>
-    <tr>
-      <td>Add favorite movie</td>
-      <td>/users/:username/movies/:movieId</td>
-      <td>POST</td>
-      <td>JSON: updated user with favorites</td>
-    </tr>
-    <tr>
-      <td>Remove favorite movie</td>
-      <td>/users/:username/movies/:movieId</td>
-      <td>DELETE</td>
-      <td>JSON: updated user with favorites</td>
-    </tr>
-    <tr>
-      <td>Deregister user</td>
-      <td>/users/:username</td>
-      <td>DELETE</td>
-      <td>JSON: confirmation message</td>
-    </tr>
-  </tbody>
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th>Request</th>
+        <th>URL</th>
+        <th>HTTP Method</th>
+        <th>Request Body</th>
+        <th>Response</th>
+      </tr>
+    </thead>
 
-<hr>
+    <tbody>
+      <tr>
+        <td>Get all movies</td>
+        <td><code>/movies</code></td>
+        <td>GET</td>
+        <td>None</td>
+        <td>200 OK (JSON array of movies)</td>
+      </tr>
 
-<h2>Endpoint Details</h2>
+      <tr>
+        <td>Get movie by title</td>
+        <td><code>/movies/:title</code></td>
+        <td>GET</td>
+        <td>None</td>
+        <td>200 OK (JSON movie object) or 404</td>
+      </tr>
 
-<h3>GET /movies</h3>
-<ul>
-  <li><strong>Description:</strong> Returns a list of all movies.</li>
-  <li><strong>Method:</strong> GET</li>
-  <li><strong>URL Parameters:</strong> None</li>
-  <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> JSON array</li>
-  <li><strong>Example Request:</strong> <code>GET http://localhost:8080/movies</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code></li>
-</ul>
+      <tr>
+        <td>Get genre by name</td>
+        <td><code>/genres/:name</code></td>
+        <td>GET</td>
+        <td>None</td>
+        <td>200 OK (JSON genre object) or 404</td>
+      </tr>
 
-<h3>GET /movies/:title</h3>
-<ul>
-  <li><strong>Description:</strong> Returns data about a single movie by title.</li>
-  <li><strong>Method:</strong> GET</li>
-  <li><strong>URL Parameters:</strong> <code>:title</code> – movie title</li>
-  <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> JSON object</li>
-  <li><strong>Example Request:</strong> <code>GET http://localhost:8080/movies/Inception</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code></li>
-</ul>
+      <tr>
+        <td>Get director by name</td>
+        <td><code>/directors/:name</code></td>
+        <td>GET</td>
+        <td>None</td>
+        <td>200 OK (JSON director object) or 404</td>
+      </tr>
 
-<h3>GET /genres/:name</h3>
-<ul>
-  <li><strong>Description:</strong> Returns information about a genre (description).</li>
-  <li><strong>Method:</strong> GET</li>
-  <li><strong>URL Parameters:</strong> <code>:name</code> – genre name</li>
-  <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> JSON object</li>
-  <li><strong>Example Request:</strong> <code>GET http://localhost:8080/genres/Thriller</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code></li>
-</ul>
+      <tr>
+        <td>Register new user</td>
+        <td><code>/users</code></td>
+        <td>POST</td>
+        <td>JSON (Username, Password, Email, Birthday)</td>
+        <td>201 Created (JSON user) or 400/500</td>
+      </tr>
 
-<h3>GET /directors/:name</h3>
-<ul>
-  <li><strong>Description:</strong> Returns information about a director (bio, birth year, death year).</li>
-  <li><strong>Method:</strong> GET</li>
-  <li><strong>URL Parameters:</strong> <code>:name</code> – director name</li>
-  <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> JSON object</li>
-  <li><strong>Example Request:</strong> <code>GET http://localhost:8080/directors/Christopher%20Nolan</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code></li>
-</ul>
+      <tr>
+        <td>Update user info</td>
+        <td><code>/users/:username</code></td>
+        <td>PUT</td>
+        <td>JSON (Username, Password, Email, Birthday)</td>
+        <td>200 OK (JSON updated user) or 404/500</td>
+      </tr>
 
-<h3>POST /users</h3>
-<ul>
-  <li><strong>Description:</strong> Registers a new user.</li>
-  <li><strong>Method:</strong> POST</li>
-  <li><strong>Request Body:</strong> JSON</li>
-  <li><strong>Response Format:</strong> JSON object</li>
-</ul>
+      <tr>
+        <td>Add favorite movie</td>
+        <td><code>/users/:username/movies/:movieId</code></td>
+        <td>POST</td>
+        <td>None</td>
+        <td>200 OK (JSON updated user) or 404/500</td>
+      </tr>
 
-<pre>
-{
+      <tr>
+        <td>Remove favorite movie</td>
+        <td><code>/users/:username/movies/:movieId</code></td>
+        <td>DELETE</td>
+        <td>None</td>
+        <td>200 OK (JSON updated user) or 404/500</td>
+      </tr>
+
+      <tr>
+        <td>Deregister user</td>
+        <td><code>/users/:username</code></td>
+        <td>DELETE</td>
+        <td>None</td>
+        <td>200 OK (confirmation message) or 404/500</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>Endpoint Details</h2>
+
+  <!-- ========================= -->
+  <h3>1) GET /movies</h3>
+  <ul>
+    <li><strong>Description:</strong> Returns a list of all movies.</li>
+    <li><strong>Method:</strong> GET</li>
+    <li><strong>URL Parameters:</strong> None</li>
+    <li><strong>Request Body:</strong> None</li>
+    <li><strong>Success Response:</strong> <code>200 OK</code> (JSON array)</li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>Movies.find()</pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>GET http://localhost:8080/movies</pre>
+  <p><strong>Example Response (200 OK):</strong></p>
+  <pre>[
+  {
+    "_id": "65a1f2c3d4e5f67890123456",
+    "Title": "Inception",
+    "Description": "A thief who steals corporate secrets through dream-sharing technology...",
+    "Genre": { "Name": "Sci-Fi", "Description": "Science fiction films..." },
+    "Director": { "Name": "Christopher Nolan", "Bio": "British-American film director...", "BirthYear": 1970, "DeathYear": null },
+    "ImagePath": "inception.png",
+    "Featured": true
+  }
+]</pre>
+
+  <!-- ========================= -->
+  <h3>2) GET /movies/:title</h3>
+  <ul>
+    <li><strong>Description:</strong> Returns data about a single movie by its title.</li>
+    <li><strong>Method:</strong> GET</li>
+    <li><strong>URL Parameters:</strong> <code>:title</code> (movie title)</li>
+    <li><strong>Request Body:</strong> None</li>
+    <li><strong>Success Response:</strong> <code>200 OK</code> (JSON movie object)</li>
+    <li><strong>Error Responses:</strong> <code>404 Not Found</code> if movie does not exist</li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>Movies.findOne({ Title: req.params.title })</pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>GET http://localhost:8080/movies/Inception</pre>
+  <p><strong>Example Response (200 OK):</strong></p>
+  <pre>{
+  "_id": "65a1f2c3d4e5f67890123456",
+  "Title": "Inception",
+  "Description": "A thief who steals corporate secrets through dream-sharing technology...",
+  "Genre": { "Name": "Sci-Fi", "Description": "Science fiction films..." },
+  "Director": { "Name": "Christopher Nolan", "Bio": "British-American film director...", "BirthYear": 1970, "DeathYear": null },
+  "ImagePath": "inception.png",
+  "Featured": true
+}</pre>
+
+  <!-- ========================= -->
+  <h3>3) GET /genres/:name</h3>
+  <ul>
+    <li><strong>Description:</strong> Returns data about a genre (description) by genre name.</li>
+    <li><strong>Method:</strong> GET</li>
+    <li><strong>URL Parameters:</strong> <code>:name</code> (genre name)</li>
+    <li><strong>Request Body:</strong> None</li>
+    <li><strong>Success Response:</strong> <code>200 OK</code> (JSON genre object)</li>
+    <li><strong>Error Responses:</strong> <code>404 Not Found</code> if genre does not exist</li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>Movies.findOne({ "Genre.Name": req.params.name }, { Genre: 1, _id: 0 })</pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>GET http://localhost:8080/genres/Sci-Fi</pre>
+  <p><strong>Example Response (200 OK):</strong></p>
+  <pre>{
+  "Name": "Sci-Fi",
+  "Description": "Science fiction films..."
+}</pre>
+
+  <!-- ========================= -->
+  <h3>4) GET /directors/:name</h3>
+  <ul>
+    <li><strong>Description:</strong> Returns data about a director (bio, birth year, death year) by director name.</li>
+    <li><strong>Method:</strong> GET</li>
+    <li><strong>URL Parameters:</strong> <code>:name</code> (director name)</li>
+    <li><strong>Request Body:</strong> None</li>
+    <li><strong>Success Response:</strong> <code>200 OK</code> (JSON director object)</li>
+    <li><strong>Error Responses:</strong> <code>404 Not Found</code> if director does not exist</li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>Movies.findOne({ "Director.Name": req.params.name }, { Director: 1, _id: 0 })</pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>GET http://localhost:8080/directors/Christopher%20Nolan</pre>
+  <p><strong>Example Response (200 OK):</strong></p>
+  <pre>{
+  "Name": "Christopher Nolan",
+  "Bio": "British-American film director...",
+  "BirthYear": 1970,
+  "DeathYear": null
+}</pre>
+
+  <!-- ========================= -->
+  <h3>5) POST /users</h3>
+  <ul>
+    <li><strong>Description:</strong> Registers a new user.</li>
+    <li><strong>Method:</strong> POST</li>
+    <li><strong>URL Parameters:</strong> None</li>
+    <li><strong>Request Body:</strong> JSON</li>
+    <li><strong>Required Fields:</strong> <code>Username</code>, <code>Password</code>, <code>Email</code></li>
+    <li><strong>Optional Fields:</strong> <code>Birthday</code></li>
+    <li><strong>Success Response:</strong> <code>201 Created</code> (JSON created user)</li>
+    <li><strong>Error Responses:</strong> <code>400 Bad Request</code> if user already exists, <code>500 Server Error</code></li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>
+Users.findOne({ Username: req.body.Username })
+Users.create({ Username, Password, Email, Birthday })
+  </pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>POST http://localhost:8080/users</pre>
+  <p><strong>Example Request Body:</strong></p>
+  <pre>{
   "Username": "enkeleda",
   "Password": "test123",
   "Email": "enkeleda@example.com",
   "Birthday": "1973-08-04"
-}
-</pre>
+}</pre>
+  <p><strong>Example Response (201 Created):</strong></p>
+  <pre>{
+  "_id": "65b2aa11bb22cc33dd44ee55",
+  "Username": "enkeleda",
+  "Password": "test123",
+  "Email": "enkeleda@example.com",
+  "Birthday": "1973-08-04T00:00:00.000Z",
+  "FavoriteMovies": []
+}</pre>
 
-<ul>
-  <li><strong>Example Response:</strong> <code>201 Created</code></li>
-</ul>
-
-<h3>PUT /users/:username</h3>
-<ul>
-  <li><strong>Description:</strong> Updates user information (one or more fields).</li>
-  <li><strong>Method:</strong> PUT</li>
-  <li><strong>URL Parameters:</strong> <code>:username</code></li>
-  <li><strong>Request Body:</strong> JSON (any updatable fields)</li>
-  <li><strong>Response Format:</strong> JSON object</li>
-</ul>
-
-<pre>
-{
+  <!-- ========================= -->
+  <h3>6) PUT /users/:username</h3>
+  <ul>
+    <li><strong>Description:</strong> Updates an existing user's information (username, password, email, birthday).</li>
+    <li><strong>Method:</strong> PUT</li>
+    <li><strong>URL Parameters:</strong> <code>:username</code> (current username)</li>
+    <li><strong>Request Body:</strong> JSON (fields to update)</li>
+    <li><strong>Success Response:</strong> <code>200 OK</code> (JSON updated user)</li>
+    <li><strong>Error Responses:</strong> <code>404 Not Found</code> if user does not exist, <code>500 Server Error</code></li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>Users.findOneAndUpdate(
+  { Username: req.params.username },
+  { $set: req.body },
+  { new: true }
+)</pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>PUT http://localhost:8080/users/enkeleda</pre>
+  <p><strong>Example Request Body:</strong></p>
+  <pre>{
   "Username": "enkeleda_new",
   "Email": "enkeleda_new@example.com"
-}
-</pre>
+}</pre>
+  <p><strong>Example Response (200 OK):</strong></p>
+  <pre>{
+  "_id": "65b2aa11bb22cc33dd44ee55",
+  "Username": "enkeleda_new",
+  "Password": "test123",
+  "Email": "enkeleda_new@example.com",
+  "Birthday": "1973-08-04T00:00:00.000Z",
+  "FavoriteMovies": []
+}</pre>
 
-<ul>
-  <li><strong>Example Response:</strong> <code>200 OK</code></li>
-</ul>
+  <!-- ========================= -->
+  <h3>7) POST /users/:username/movies/:movieId</h3>
+  <ul>
+    <li><strong>Description:</strong> Adds a movie to the user's list of favorite movies.</li>
+    <li><strong>Method:</strong> POST</li>
+    <li><strong>URL Parameters:</strong> <code>:username</code>, <code>:movieId</code> (MongoDB ObjectId)</li>
+    <li><strong>Request Body:</strong> None</li>
+    <li><strong>Success Response:</strong> <code>200 OK</code> (JSON updated user)</li>
+    <li><strong>Error Responses:</strong> <code>404 Not Found</code> if user not found, <code>500 Server Error</code></li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>Users.findOneAndUpdate(
+  { Username: req.params.username },
+  { $addToSet: { FavoriteMovies: req.params.movieId } },
+  { new: true }
+)</pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>POST http://localhost:8080/users/enkeleda_new/movies/65a1f2c3d4e5f67890123456</pre>
+  <p><strong>Example Response (200 OK):</strong></p>
+  <pre>{
+  "_id": "65b2aa11bb22cc33dd44ee55",
+  "Username": "enkeleda_new",
+  "Email": "enkeleda_new@example.com",
+  "FavoriteMovies": ["65a1f2c3d4e5f67890123456"]
+}</pre>
 
-<h3>POST /users/:username/movies/:movieId</h3>
-<ul>
-  <li><strong>Description:</strong> Adds a movie to the user’s favorites list.</li>
-  <li><strong>Method:</strong> POST</li>
-  <li><strong>URL Parameters:</strong> <code>:username</code>, <code>:movieId</code></li>
-  <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> JSON object</li>
-  <li><strong>Example Request:</strong>
-    <code>POST http://localhost:8080/users/enkeleda/movies/65a1f2c3d4e5f67890123456</code>
-  </li>
-  <li><strong>Example Response:</strong> <code>200 OK</code></li>
-</ul>
+  <!-- ========================= -->
+  <h3>8) DELETE /users/:username/movies/:movieId</h3>
+  <ul>
+    <li><strong>Description:</strong> Removes a movie from the user's favorites list.</li>
+    <li><strong>Method:</strong> DELETE</li>
+    <li><strong>URL Parameters:</strong> <code>:username</code>, <code>:movieId</code> (MongoDB ObjectId)</li>
+    <li><strong>Request Body:</strong> None</li>
+    <li><strong>Success Response:</strong> <code>200 OK</code> (JSON updated user)</li>
+    <li><strong>Error Responses:</strong> <code>404 Not Found</code> if user not found, <code>500 Server Error</code></li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>Users.findOneAndUpdate(
+  { Username: req.params.username },
+  { $pull: { FavoriteMovies: req.params.movieId } },
+  { new: true }
+)</pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>DELETE http://localhost:8080/users/enkeleda_new/movies/65a1f2c3d4e5f67890123456</pre>
+  <p><strong>Example Response (200 OK):</strong></p>
+  <pre>{
+  "_id": "65b2aa11bb22cc33dd44ee55",
+  "Username": "enkeleda_new",
+  "FavoriteMovies": []
+}</pre>
 
-<h3>DELETE /users/:username/movies/:movieId</h3>
-<ul>
-  <li><strong>Description:</strong> Removes a movie from the user’s favorites list.</li>
-  <li><strong>Method:</strong> DELETE</li>
-  <li><strong>URL Parameters:</strong> <code>:username</code>, <code>:movieId</code></li>
-  <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> JSON object</li>
-  <li><strong>Example Request:</strong>
-    <code>DELETE http://localhost:8080/users/enkeleda/movies/65a1f2c3d4e5f67890123456</code>
-  </li>
-  <li><strong>Example Response:</strong> <code>200 OK</code></li>
-</ul>
+  <!-- ========================= -->
+  <h3>9) DELETE /users/:username</h3>
+  <ul>
+    <li><strong>Description:</strong> Deregisters (deletes) an existing user by username.</li>
+    <li><strong>Method:</strong> DELETE</li>
+    <li><strong>URL Parameters:</strong> <code>:username</code></li>
+    <li><strong>Request Body:</strong> None</li>
+    <li><strong>Success Response:</strong> <code>200 OK</code> (confirmation message)</li>
+    <li><strong>Error Responses:</strong> <code>404 Not Found</code> if user not found, <code>500 Server Error</code></li>
+    <li><strong>Business Logic (Mongoose):</strong></li>
+  </ul>
+  <pre>Users.findOneAndDelete({ Username: req.params.username })</pre>
+  <p><strong>Example Request:</strong></p>
+  <pre>DELETE http://localhost:8080/users/enkeleda_new</pre>
+  <p><strong>Example Response (200 OK):</strong></p>
+  <pre>{
+  "message": "enkeleda_new was deleted."
+}</pre>
 
-<h3>DELETE /users/:username</h3>
-<ul>
-  <li><strong>Description:</strong> Deregisters a user.</li>
-  <li><strong>Method:</strong> DELETE</li>
-  <li><strong>URL Parameters:</strong> <code>:username</code></li>
-  <li><strong>Request Body:</strong> None</li>
-  <li><strong>Response Format:</strong> JSON message</li>
-  <li><strong>Example Request:</strong> <code>DELETE http://localhost:8080/users/enkeleda</code></li>
-  <li><strong>Example Response:</strong> <code>200 OK</code></li>
-</ul>
-
+  <hr>
+  <p><strong>Last updated:</strong> Exercise 2.8 – Mongoose Models + Business Logic</p>
 </body>
 </html>
