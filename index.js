@@ -1,187 +1,187 @@
 /**
- * index.js — CareerFoundry Exercise 2.8 (Mongoose + endpoints) — MongoDB Atlas
+ * index.js — myFlix API (CareerFoundry)
  */
-
 require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
-const path = require("path");
+const morgan = require("morgan");
+const cors = require("cors");
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
-// ====== Models ======
+// ===== Middleware =====
+app.use(express.json());
+app.use(morgan("common"));
+app.use(cors());
+
+// ===== Models =====
 const Models = require("./models.js");
 const Movies = Models.Movie;
 const Users = Models.User;
 
-// ====== Middleware ======
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+// ===== Passport strategies (JWT + Local) =====
+require("./passport");
 
-// ====== MongoDB Atlas Connection ======
-if (!process.env.CONNECTION_URI) {
-  console.error("❌ Missing CONNECTION_URI in .env");
-  process.exit(1);
-}
+// ===== DB Connection =====
+// përdor çfarë ke në .env: CONNECTION_URI ose MONGO_URI
+const mongoUri = process.env.CONNECTION_URI || process.env.MONGO_URI;
 
-mongoose.connect(process.env.CONNECTION_URI);
+mongoose.connect(mongoUri, {
+  // këto opsione s’janë të detyrueshme në versionet e reja,
+  // por nuk prishin punë
+})
+.then(() => console.log("✅ MongoDB connected"))
+.catch((err) => console.error("❌ MongoDB connection error:", err));
 
-mongoose.connection.on("connected", () => {
-  console.log("✅ MongoDB connected");
-});
-
-mongoose.connection.on("error", (err) => {
-  console.error("❌ MongoDB connection error:", err);
-});
-
-// ====== Root ======
+// ===== Routes: root =====
 app.get("/", (req, res) => {
   res.send("Welcome to myFlix API");
 });
 
-// =====================================================
-// MOVIES ENDPOINTS
-// =====================================================
+// ===== Auth routes (/login) =====
+// auth.js duhet të ekspozojë një funksion: module.exports = (app) => { ... }
+require("./auth")(app);
 
-// 1) Return a list of ALL movies
-app.get("/movies", async (req, res) => {
-  await Movies.find()
-    .then((movies) => res.status(200).json(movies))
-    .catch((err) => res.status(500).send("Error: " + err));
-});
+// ===== JWT protected test =====
+const passport = require("passport");
+app.get(
+  "/protected-test",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    return res.status(200).json({ ok: true, user: req.user?.Username });
+  }
+);
 
-// 2) Return data about a single movie by title
-// Example: /movies/Title/Silence%20of%20the%20Lambs
-// 2) Return data about a single movie by title
-// Example: /movies/Inception  OR /movies/Silence%20of%20the%20Lambs
+/**
+ * =========================
+ * USERS
+ * =========================
+ */
 
-app.get("/movies/:title", async (req, res) => {
+// ✅ PUBLIC: Register user (NO JWT here)
+app.post("/users", async (req, res) => {
   try {
-    const movie = await Movies.findOne({ Title: req.params.title });
+    const { Username, Password, Email, Birthday } = req.body;
 
-    if (!movie) {
-      return res.status(404).send("Movie not found");
+    if (!Username || !Password) {
+      return res.status(400).json({ message: "Username and Password are required" });
     }
 
-    res.status(200).json(movie);
+    // kontrollo nëse ekziston user me të njëjtin username
+    const existingUser = await Users.findOne({ Username });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
+    const hashedPassword = Users.hashPassword(Password);
+
+    const createdUser = await Users.create({
+      Username,
+      Password: hashedPassword,
+      Email,
+      Birthday,
+    });
+
+    return res.status(201).json(createdUser);
   } catch (err) {
-    res.status(500).send("Error: " + err);
+    console.error(err);
+    return res.status(500).json({ message: "Error: " + err });
   }
 });
-// 3) Return data about a genre (description) by name
-// Example: /genres/Thriller
-app.get("/genres/:Name", async (req, res) => {
-  await Movies.findOne({ "Genre.Name": req.params.Name })
-    .then((movie) => {
-      if (!movie) return res.status(404).send("Genre not found");
-      res.status(200).json(movie.Genre);
-    })
-    .catch((err) => res.status(500).send("Error: " + err));
+
+// ✅ JWT required: Get all users
+app.get(
+  "/users",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const users = await Users.find();
+      return res.status(200).json(users);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Error: " + err });
+    }
+  }
+);
+
+/**
+ * =========================
+ * MOVIES (JWT required)
+ * =========================
+ */
+
+// Get all movies
+app.get(
+  "/movies",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const movies = await Movies.find();
+      return res.status(200).json(movies);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Error: " + err });
+    }
+  }
+);
+
+// Get movie by title
+app.get(
+  "/movies/:Title",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const movie = await Movies.findOne({ Title: req.params.Title });
+      if (!movie) return res.status(404).json({ message: "Movie not found" });
+      return res.status(200).json(movie);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Error: " + err });
+    }
+  }
+);
+
+// Get genre by name
+app.get(
+  "/genres/:Name",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const movie = await Movies.findOne({ "Genre.Name": req.params.Name });
+      if (!movie) return res.status(404).json({ message: "Genre not found" });
+      return res.status(200).json(movie.Genre);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Error: " + err });
+    }
+  }
+);
+
+// Get director by name
+app.get(
+  "/directors/:Name",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const movie = await Movies.findOne({ "Director.Name": req.params.Name });
+      if (!movie) return res.status(404).json({ message: "Director not found" });
+      return res.status(200).json(movie.Director);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Error: " + err });
+    }
+  }
+);
+
+// ===== Error handler =====
+app.use((err, req, res, next) => {
+  console.error(err);
+  return res.status(500).json({ message: "Something broke!" });
 });
 
-// 4) Return data about a director by name
-// Example: /directors/Jonathan%20Demme
-app.get("/directors/:Name", async (req, res) => {
-  await Movies.findOne({ "Director.Name": req.params.Name })
-    .then((movie) => {
-      if (!movie) return res.status(404).send("Director not found");
-      res.status(200).json(movie.Director);
-    })
-    .catch((err) => res.status(500).send("Error: " + err));
-});
-
-// =====================================================
-// USERS ENDPOINTS
-// =====================================================
-
-// 5) Allow new users to register
-app.post("/users", async (req, res) => {
-  await Users.findOne({ Username: req.body.Username })
-    .then((user) => {
-      if (user) return res.status(400).send(req.body.Username + " already exists");
-
-      return Users.create({
-        Username: req.body.Username,
-        Password: req.body.Password,
-        Email: req.body.Email,
-        Birthday: req.body.Birthday,
-      })
-        .then((createdUser) => res.status(201).json(createdUser))
-        .catch((err) => res.status(500).send("Error: " + err));
-    })
-    .catch((err) => res.status(500).send("Error: " + err));
-});
-
-// (Helper) Get all users
-app.get("/users", async (req, res) => {
-  await Users.find()
-    .then((users) => res.status(200).json(users))
-    .catch((err) => res.status(500).send("Error: " + err));
-});
-
-// 6) Allow users to update their user info
-app.put("/users/:Username", async (req, res) => {
-  await Users.findOneAndUpdate(
-    { Username: req.params.Username },
-    {
-      $set: {
-        Username: req.body.Username,
-        Password: req.body.Password,
-        Email: req.body.Email,
-        Birthday: req.body.Birthday,
-      },
-    },
-    { new: true }
-  )
-    .then((updatedUser) => {
-      if (!updatedUser) return res.status(404).send("User not found");
-      res.status(200).json(updatedUser);
-    })
-    .catch((err) => res.status(500).send("Error: " + err));
-});
-
-// 7) Add a movie to user's favorites
-app.post("/users/:Username/movies/:MovieID", async (req, res) => {
-  await Users.findOneAndUpdate(
-    { Username: req.params.Username },
-    { $addToSet: { FavoriteMovies: req.params.MovieID } },
-    { new: true }
-  )
-    .then((updatedUser) => {
-      if (!updatedUser) return res.status(404).send("User not found");
-      res.status(200).json(updatedUser);
-    })
-    .catch((err) => res.status(500).send("Error: " + err));
-});
-
-// 8) Remove a movie from user's favorites
-app.delete("/users/:Username/movies/:MovieID", async (req, res) => {
-  await Users.findOneAndUpdate(
-    { Username: req.params.Username },
-    { $pull: { FavoriteMovies: req.params.MovieID } },
-    { new: true }
-  )
-    .then((updatedUser) => {
-      if (!updatedUser) return res.status(404).send("User not found");
-      res.status(200).json(updatedUser);
-    })
-    .catch((err) => res.status(500).send("Error: " + err));
-});
-
-// 9) Deregister user
-app.delete("/users/:Username", async (req, res) => {
-  await Users.findOneAndDelete({ Username: req.params.Username })
-    .then((deletedUser) => {
-      if (!deletedUser) return res.status(404).send("User not found");
-      res.status(200).send(req.params.Username + " was deleted.");
-    })
-    .catch((err) => res.status(500).send("Error: " + err));
-});
-
-// ====== Start Server ======
+// ===== Start server =====
 app.listen(PORT, () => {
-  console.log("myFlix API is listening on port " + PORT);
+  console.log(`✅ myFlix API is listening on port ${PORT}`);
 });
