@@ -15,6 +15,8 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(morgan("common"));
 app.use(cors());
+app.use(express.static("public"));
+
 
 // ===== Models =====
 const Models = require("./models.js");

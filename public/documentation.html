@@ -36,91 +36,112 @@
 
   <h2>myFlix API Endpoints</h2>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Request</th>
-        <th>URL</th>
-        <th>HTTP Method</th>
-        <th>Request Body</th>
-        <th>Response</th>
-      </tr>
-    </thead>
+<table>
+  <thead>
+    <tr>
+      <th>Request</th>
+      <th>URL</th>
+      <th>HTTP Method</th>
+      <th>Request Body</th>
+      <th>Response</th>
+      <th>Authentication</th>
+    </tr>
+  </thead>
 
-    <tbody>
-      <tr>
-        <td>Get all movies</td>
-        <td><code>/movies</code></td>
-        <td>GET</td>
-        <td>None</td>
-        <td>200 OK (JSON array of movies)</td>
-      </tr>
+  <tbody>
+    <tr>
+      <td>Get all movies</td>
+      <td><code>/movies</code></td>
+      <td>GET</td>
+      <td>None</td>
+      <td>200 OK (JSON array of movies)</td>
+      <td>JWT authentication</td>
+    </tr>
 
-      <tr>
-        <td>Get movie by title</td>
-        <td><code>/movies/:title</code></td>
-        <td>GET</td>
-        <td>None</td>
-        <td>200 OK (JSON movie object) or 404</td>
-      </tr>
+    <tr>
+      <td>Get movie by title</td>
+      <td><code>/movies/:Title</code></td>
+      <td>GET</td>
+      <td>None</td>
+      <td>200 OK (JSON movie object) or 404</td>
+      <td>JWT authentication</td>
+    </tr>
 
-      <tr>
-        <td>Get genre by name</td>
-        <td><code>/genres/:name</code></td>
-        <td>GET</td>
-        <td>None</td>
-        <td>200 OK (JSON genre object) or 404</td>
-      </tr>
+    <tr>
+      <td>Get genre by name</td>
+      <td><code>/genres/:Name</code></td>
+      <td>GET</td>
+      <td>None</td>
+      <td>200 OK (JSON genre object) or 404</td>
+      <td>JWT authentication</td>
+    </tr>
 
-      <tr>
-        <td>Get director by name</td>
-        <td><code>/directors/:name</code></td>
-        <td>GET</td>
-        <td>None</td>
-        <td>200 OK (JSON director object) or 404</td>
-      </tr>
+    <tr>
+      <td>Get director by name</td>
+      <td><code>/directors/:Name</code></td>
+      <td>GET</td>
+      <td>None</td>
+      <td>200 OK (JSON director object) or 404</td>
+      <td>JWT authentication</td>
+    </tr>
 
-      <tr>
-        <td>Register new user</td>
-        <td><code>/users</code></td>
-        <td>POST</td>
-        <td>JSON (Username, Password, Email, Birthday)</td>
-        <td>201 Created (JSON user) or 400/500</td>
-      </tr>
+    <tr>
+      <td>Register new user</td>
+      <td><code>/users</code></td>
+      <td>POST</td>
+      <td>JSON (Username, Password, Email, Birthday)</td>
+      <td>201 Created (JSON user) or 400/500</td>
+      <td>none</td>
+    </tr>
 
-      <tr>
-        <td>Update user info</td>
-        <td><code>/users/:username</code></td>
-        <td>PUT</td>
-        <td>JSON (Username, Password, Email, Birthday)</td>
-        <td>200 OK (JSON updated user) or 404/500</td>
-      </tr>
+    <!-- ✅ NEW: LOGIN ENDPOINT -->
+    <tr>
+      <td>Login (get JWT token)</td>
+      <td><code>/login</code></td>
+      <td>POST</td>
+      <td>JSON (Username, Password)</td>
+      <td>200 OK (JSON user + token) or 400</td>
+      <td>username and password</td>
+    </tr>
 
-      <tr>
-        <td>Add favorite movie</td>
-        <td><code>/users/:username/movies/:movieId</code></td>
-        <td>POST</td>
-        <td>None</td>
-        <td>200 OK (JSON updated user) or 404/500</td>
-      </tr>
+    <tr>
+      <td>Update user info</td>
+      <td><code>/users/:Username</code></td>
+      <td>PUT</td>
+      <td>JSON (Username, Password, Email, Birthday)</td>
+      <td>200 OK (JSON updated user) or 404/500</td>
+      <td>JWT authentication</td>
+    </tr>
 
-      <tr>
-        <td>Remove favorite movie</td>
-        <td><code>/users/:username/movies/:movieId</code></td>
-        <td>DELETE</td>
-        <td>None</td>
-        <td>200 OK (JSON updated user) or 404/500</td>
-      </tr>
+    <tr>
+      <td>Add favorite movie</td>
+      <td><code>/users/:Username/movies/:MovieID</code></td>
+      <td>POST</td>
+      <td>None</td>
+      <td>200 OK (JSON updated user) or 404/500</td>
+      <td>JWT authentication</td>
+    </tr>
 
-      <tr>
-        <td>Deregister user</td>
-        <td><code>/users/:username</code></td>
-        <td>DELETE</td>
-        <td>None</td>
-        <td>200 OK (confirmation message) or 404/500</td>
-      </tr>
-    </tbody>
-  </table>
+    <tr>
+      <td>Remove favorite movie</td>
+      <td><code>/users/:Username/movies/:MovieID</code></td>
+      <td>DELETE</td>
+      <td>None</td>
+      <td>200 OK (JSON updated user) or 404/500</td>
+      <td>JWT authentication</td>
+    </tr>
+
+    <tr>
+      <td>Deregister user</td>
+      <td><code>/users/:Username</code></td>
+      <td>DELETE</td>
+      <td>None</td>
+      <td>200 OK (confirmation message) or 404/500</td>
+      <td>JWT authentication</td>
+    </tr>
+  </tbody>
+</table>
+
 
   <hr>
 
