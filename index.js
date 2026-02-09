@@ -86,6 +86,20 @@ app.get(
     return res.status(200).json({ ok: true, user: req.user?.Username });
   }
 );
+// ✅ JWT required: Get all movies
+app.get(
+  "/movies",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const movies = await Movies.find();
+      return res.status(200).json(movies);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Error: " + err });
+    }
+  }
+);
 
 
 
