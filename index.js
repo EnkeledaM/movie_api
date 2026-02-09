@@ -1,7 +1,13 @@
 /**
  * index.js — myFlix API (CareerFoundry)
  */
+console.log("✅ RUNNING FILE:", __filename);
+console.log("✅ RUNNING DIR:", process.cwd());
+
+
 require("dotenv").config();
+const { check, validationResult } = require('express-validator');
+
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -9,13 +15,15 @@ const morgan = require("morgan");
 const cors = require("cors");
 
 const app = express();
+console.log("✅ PO NISEM NGA KY INDEX.JS (me PUT)");
 const PORT = process.env.PORT || 8080;
 
 // ===== Middleware =====
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // ✅ shtoje këtë
 app.use(morgan("common"));
 app.use(cors());
-app.use(express.static("public"));
+
 
 
 // ===== Models =====
@@ -42,6 +50,29 @@ app.get("/", (req, res) => {
   res.send("Welcome to myFlix API");
 });
 
+app.get("/routes-check", (req, res) => {
+  try {
+    const stack = app._router?.stack || [];
+
+    const routes = stack
+      .filter((layer) => layer.route && layer.route.path)
+      .map((layer) => {
+        const methods = Object.keys(layer.route.methods || {})
+          .join(",")
+          .toUpperCase();
+        return `${methods} ${layer.route.path}`;
+      });
+
+    return res.status(200).json({ ok: true, routes });
+  } catch (err) {
+    console.error("routes-check error:", err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+
+
+
 // ===== Auth routes (/login) =====
 // auth.js duhet të ekspozojë një funksion: module.exports = (app) => { ... }
 require("./auth")(app);
@@ -56,6 +87,8 @@ app.get(
   }
 );
 
+
+
 /**
  * =========================
  * USERS
@@ -63,35 +96,47 @@ app.get(
  */
 
 // ✅ PUBLIC: Register user (NO JWT here)
-app.post("/users", async (req, res) => {
-  try {
-    const { Username, Password, Email, Birthday } = req.body;
+app.post(
+  '/users',
+  [
+    check('Username', 'Username is required (min 5 characters)').isLength({ min: 5 }),
+    check('Username', 'Username must be alphanumeric').isAlphanumeric(),
+    check('Password', 'Password is required').not().isEmpty(),
+    check('Email', 'Email must be valid').isEmail()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
 
-    if (!Username || !Password) {
-      return res.status(400).json({ message: "Username and Password are required" });
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
     }
 
-    // kontrollo nëse ekziston user me të njëjtin username
-    const existingUser = await Users.findOne({ Username });
-    if (existingUser) {
-      return res.status(400).json({ message: "Username already exists" });
+    try {
+      const { Username, Password, Email, Birthday } = req.body;
+
+      const hashedPassword = Users.hashPassword(Password);
+
+      const existingUser = await Users.findOne({ Username });
+      if (existingUser) {
+        return res.status(400).send(Username + ' already exists');
+      }
+
+      const createdUser = await Users.create({
+        Username,
+        Password: hashedPassword,
+        Email,
+        Birthday
+      });
+
+      return res.status(201).json(createdUser);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: err.message });
     }
-
-    const hashedPassword = Users.hashPassword(Password);
-
-    const createdUser = await Users.create({
-      Username,
-      Password: hashedPassword,
-      Email,
-      Birthday,
-    });
-
-    return res.status(201).json(createdUser);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Error: " + err });
   }
-});
+);
+
+
 
 // ✅ JWT required: Get all users
 app.get(
@@ -108,55 +153,41 @@ app.get(
   }
 );
 
-/**
- * =========================
- * MOVIES (JWT required)
- * =========================
- */
-
-// Get all movies
-app.get(
-  "/movies",
+// ✅ JWT required: Update a user by Username
+app.put(
+  "/users/:Username",
   passport.authenticate("jwt", { session: false }),
+  [
+    check("Username", "Username must be at least 5 characters").optional().isLength({ min: 5 }),
+    check("Username", "Username must be alphanumeric").optional().isAlphanumeric(),
+    check("Password", "Password cannot be empty").optional().not().isEmpty(),
+    check("Email", "Email must be valid").optional().isEmail(),
+  ],
   async (req, res) => {
-    try {
-      const movies = await Movies.find();
-      return res.status(200).json(movies);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error: " + err });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
     }
-  }
-);
 
-// Get movie by title
-app.get(
-  "/movies/:Title",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
     try {
-      const movie = await Movies.findOne({ Title: req.params.Title });
-      if (!movie) return res.status(404).json({ message: "Movie not found" });
-      return res.status(200).json(movie);
+      if (req.body.Password) {
+        req.body.Password = Users.hashPassword(req.body.Password);
+      }
+
+      const updatedUser = await Users.findOneAndUpdate(
+        { Username: req.params.Username },
+        { $set: req.body },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json(updatedUser);
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ message: "Error: " + err });
-    }
-  }
-);
-
-// Get genre by name
-app.get(
-  "/genres/:Name",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    try {
-      const movie = await Movies.findOne({ "Genre.Name": req.params.Name });
-      if (!movie) return res.status(404).json({ message: "Genre not found" });
-      return res.status(200).json(movie.Genre);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error: " + err });
+      return res.status(500).json({ message: err.message });
     }
   }
 );
