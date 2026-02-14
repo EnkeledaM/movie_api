@@ -1,4 +1,4 @@
-const jwtSecret = 'your_jwt_secret'; // same key used in JWTStrategy
+const jwtSecret = process.env.JWT_SECRET; // same key used in JWTStrategy
 
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
@@ -19,7 +19,7 @@ module.exports = (app) => {
           res.send(error);
         }
 
-        const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET, {
+        const token = jwt.sign(user.toJSON(), jwtSecret, {
           expiresIn: '7d'
         });
 
