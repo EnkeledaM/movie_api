@@ -71,8 +71,6 @@ app.get("/routes-check", (req, res) => {
 });
 
 
-
-
 // ===== Auth routes (/login) =====
 // auth.js duhet të ekspozojë një funksion: module.exports = (app) => { ... }
 require("./auth")(app);
@@ -86,6 +84,8 @@ app.get(
     return res.status(200).json({ ok: true, user: req.user?.Username });
   }
 );
+
+// ===== Movies =====
 // ✅ JWT required: Get all movies
 app.get(
   "/movies",
@@ -102,7 +102,6 @@ app.get(
 );
 
 
-
 /**
  * =========================
  * USERS
@@ -111,12 +110,17 @@ app.get(
 
 // ✅ PUBLIC: Register user (NO JWT here)
 app.post(
-  '/users',
+  "/users",
   [
-    check('Username', 'Username is required (min 5 characters)').isLength({ min: 5 }),
-    check('Username', 'Username must be alphanumeric').isAlphanumeric(),
-    check('Password', 'Password is required').not().isEmpty(),
-    check('Email', 'Email must be valid').isEmail()
+    check("Username", "Username must be at least 5 characters")
+      .isLength({ min: 5 }),
+    check("Username", "Username must be alphanumeric")
+      .isAlphanumeric(),
+    check("Password", "Password is required and must not contain spaces")
+      .not().isEmpty()
+      .matches(/^\S+$/), // 🚫 no spaces allowed
+    check("Email", "Email must be valid")
+      .isEmail()
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -149,6 +153,55 @@ app.post(
     }
   }
 );
+// ✅ ADD MOVIE TO FAVORITES
+app.post(
+  "/users/:Username/movies/:MovieID",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const updatedUser = await Users.findOneAndUpdate(
+        { Username: req.params.Username },
+        { $addToSet: { FavoriteMovies: req.params.MovieID } },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json(updatedUser);
+
+    } catch (err) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+);
+
+// ✅ REMOVE MOVIE FROM FAVORITES
+app.delete(
+  "/users/:Username/movies/:MovieID",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const updatedUser = await Users.findOneAndUpdate(
+        { Username: req.params.Username },
+        { $pull: { FavoriteMovies: req.params.MovieID } },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json(updatedUser);
+
+    } catch (err) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+);
+  
+
 
 
 
