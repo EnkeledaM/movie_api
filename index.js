@@ -13,6 +13,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
@@ -51,6 +52,12 @@ app.get("/", (req, res) => {
   res.send("Welcome to myFlix API");
 });
 
+
+app.get("/documentation.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "documentation.html"));
+});
+
+
 app.get("/routes-check", (req, res) => {
   try {
     // Express mund t’i mbajë routes te app._router OSE te app.router (varësisht versioni)
@@ -79,8 +86,6 @@ app.get("/routes-check", (req, res) => {
     return res.status(500).json({ ok: false, error: err.message });
   }
 });
-
-
 
 // ===== Auth routes (/login) =====
 // auth.js duhet të ekspozojë një funksion: module.exports = (app) => { ... }
