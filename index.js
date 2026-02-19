@@ -52,9 +52,13 @@ app.get("/", (req, res) => {
 
 app.get("/routes-check", (req, res) => {
   try {
-    const stack = app._router?.stack || [];
+    // Express mund t’i mbajë routes te app._router OSE te app.router (varësisht versioni)
+    const router =
+      (app._router && app._router.stack) ||
+      (app.router && app.router.stack) ||
+      [];
 
-    const routes = stack
+    const routes = router
       .filter((layer) => layer.route && layer.route.path)
       .map((layer) => {
         const methods = Object.keys(layer.route.methods || {})
@@ -63,12 +67,18 @@ app.get("/routes-check", (req, res) => {
         return `${methods} ${layer.route.path}`;
       });
 
-    return res.status(200).json({ ok: true, routes });
+    return res.status(200).json({
+      ok: true,
+      has__router: !!app._router,
+      has_router: !!app.router,
+      routes,
+    });
   } catch (err) {
     console.error("routes-check error:", err);
     return res.status(500).json({ ok: false, error: err.message });
   }
 });
+
 
 
 // ===== Auth routes (/login) =====
