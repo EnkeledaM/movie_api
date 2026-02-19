@@ -15,6 +15,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 
 const app = express();
+
 console.log("✅ PO NISEM NGA KY INDEX.JS (me PUT)");
 const PORT = process.env.PORT || 8080;
 
@@ -23,7 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // ✅ shtoje këtë
 app.use(morgan("common"));
 app.use(cors());
-
+app.use(express.static("public"));
 
 
 // ===== Models =====
