@@ -104,10 +104,10 @@ app.get(
 // ===== Movies =====
 // ✅ JWT required: Get all movies
 // ✅ TEMP (Exercise 3.4): JWT removed so React client can fetch movies
+// TEMP: Task 3.5 - allow /movies without JWT so the React client can fetch movies
 
 app.get(
   "/movies",
-  passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     try {
       const movies = await Movies.find();
@@ -118,8 +118,6 @@ app.get(
     }
   }
 );
-
-
 
 /**
  * =========================
