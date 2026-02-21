@@ -108,13 +108,14 @@ app.get(
 
 app.get(
   "/movies",
+  passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     try {
       const movies = await Movies.find();
-      return res.status(200).json(movies);
+      res.status(200).json(movies);
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ message: "Error: " + err });
+      res.status(500).send("Error: " + err);
     }
   }
 );
