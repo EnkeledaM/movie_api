@@ -220,9 +220,6 @@ app.delete(
 );
   
 
-
-
-
 // ✅ JWT required: Get all users
 app.get(
   "/users",
@@ -276,6 +273,29 @@ app.put(
     }
   }
 );
+
+// ✅ JWT required: Deregister (Delete) a user by Username
+app.delete(
+  "/users/:Username",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const deletedUser = await Users.findOneAndDelete({
+        Username: req.params.Username,
+      });
+
+      if (!deletedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json({ message: "User deleted" });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: err.message });
+    }
+  }
+);
+
 
 // Get director by name
 app.get(
